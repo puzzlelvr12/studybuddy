@@ -3,7 +3,8 @@ import openai
 import os
 
 # Get your OpenAI API key from environment variable
-openai.api_key = os.environ['OPENAI_API_KEY']
+api_key = os.environ['OPENAI_API_KEY']
+client = openai.OpenAI(api_key=api_key)
 
 app = Flask(__name__)
 
@@ -14,21 +15,23 @@ TEMPLATE = '''
   <button>Ask</button>
 </form>
 {% if response %}
-  <p><b>Bot:</b> {{response}}</p>
+  <p><b>Bot:</b> {{ response }}</p>
 {% endif %}
 '''
 
 def ask_gpt(prompt):
-    system_msg = ("You are a helpful study assistant. Answer questions clearly and always "
-                  "follow up with a critical thinking question to help the student deepen their understanding.")
-    response = openai.ChatCompletion.create(
+    system_msg = (
+        "You are a helpful study assistant. Answer questions clearly and always "
+        "follow up with a critical thinking question to help the student deepen their understanding."
+    )
+    response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": system_msg},
             {"role": "user", "content": prompt}
         ]
     )
-    return response['choices'][0]['message']['content']
+    return response.choices[0].message.content
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
